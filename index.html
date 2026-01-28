@@ -3,20 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiny Wins - Pet Evolution</title>
+    <title>Tiny Wins - Dragon & Wolf Companions</title>
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Auth Section -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-box">
+            <h1>🐉 Tiny Wins 🐺</h1>
+            <p>Your companion awaits</p>
+            
+            <div id="login-form">
+                <input type="email" id="email" placeholder="Email" />
+                <input type="password" id="password" placeholder="Password" />
+                <button id="signin-btn">Sign In</button>
+                <button id="signup-btn" class="secondary">Create Account</button>
+            </div>
+            
+            <div id="pet-selection" class="hidden">
+                <h3>Choose Your Companion</h3>
+                <div class="pet-options">
+                    <div class="pet-option" data-pet="dragon">
+                        <div class="pet-emoji">🐉</div>
+                        <div>Dragon</div>
+                    </div>
+                    <div class="pet-option" data-pet="wolf">
+                        <div class="pet-emoji">🐺</div>
+                        <div>Wolf</div>
+                    </div>
+                </div>
+                <button id="select-pet-btn" class="hidden">Start Journey</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden until auth) -->
+    <div id="app-section" class="hidden">
         <header>
-            <h1>🌱 Tiny Wins</h1>
-            <p>One small step at a time</p>
+            <div class="header-top">
+                <h1 id="app-title">🐉 Tiny Wins</h1>
+                <button id="logout-btn" class="logout">Logout</button>
+            </div>
+            <p>One small step at a time with your <span id="current-pet-type">dragon</span></p>
         </header>
 
         <div class="pet-section">
             <div class="pet-container">
                 <div id="pet" class="pet stage-1">🥚</div>
-                <div class="pet-name">Your Pet</div>
+                <div class="pet-name" id="pet-name">Your Companion</div>
                 <div class="level">Level <span id="level">1</span></div>
                 <div class="xp-bar">
                     <div id="xp-fill" class="xp-fill"></div>
@@ -28,12 +62,13 @@
         <div class="task-section">
             <h2>Next Tiny Task</h2>
             <div id="current-task" class="task-card">
-                <div class="task-text">Loading...</div>
+                <div class="task-text">Loading AI task...</div>
                 <div class="task-time">⏱️ <span id="task-time">1 min</span></div>
             </div>
             
             <button id="complete-task" class="complete-btn">I Did It! ✅</button>
             <button id="skip-task" class="skip-btn">Too Much Right Now 🔄</button>
+            <button id="regenerate-task" class="regenerate-btn">Generate New Task 🎯</button>
         </div>
 
         <div class="stats">
@@ -44,6 +79,10 @@
             <div class="stat-card">
                 <div class="stat-number" id="streak">0</div>
                 <div class="stat-label">Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="total-tasks">0</div>
+                <div class="stat-label">Total</div>
             </div>
         </div>
 

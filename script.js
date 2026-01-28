@@ -1,141 +1,218 @@
+import { authManager } from './auth.js';
+import { aiTaskGenerator } from './ai-tasks.js';
+import { getPetEvolution } from './pets.js';
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-// Initialize Supabase
 const supabaseUrl = 'https://glcbgojazyixtydglqeh.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdsY2Jnb2phenlpeHR5ZGdscWVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk1NTI3MDYsImV4cCI6MjA4NTEyODcwNn0.6KDkeCtlYbT5jo4mvA_iwYo4vgCPtn4DTyG7HYkeqUM';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Simple tasks that take 1-2 minutes max
-const tinyTasks = [
-    { text: "Drink a glass of water", time: "1 min", xp: 1 },
-    { text: "Put 1 dish in the dishwasher", time: "30 sec", xp: 1 },
-    { text: "Take 3 deep breaths", time: "1 min", xp: 1 },
-    { text: "Put 1 item of clothing away", time: "1 min", xp: 1 },
-    { text: "Stretch for 30 seconds", time: "30 sec", xp: 1 },
-    { text: "Look out the window for 1 minute", time: "1 min", xp: 1 },
-    { text: "Touch your toes once", time: "30 sec", xp: 1 },
-    { text: "Smile for 10 seconds", time: "10 sec", xp: 1 },
-    { text: "Blink slowly 10 times", time: "30 sec", xp: 1 },
-    { text: "Put 1 thing back where it belongs", time: "1 min", xp: 1 },
-    { text: "Take 1 sip of water", time: "10 sec", xp: 1 },
-    { text: "Roll your shoulders once", time: "30 sec", xp: 1 },
-    { text: "Look at something green", time: "30 sec", xp: 1 },
-    { text: "Exhale slowly 3 times", time: "1 min", xp: 1 }
-];
-
-// Pet evolution stages
-const petStages = [
-    { emoji: "🥚", name: "Egg", level: 1, xpNeeded: 5 },
-    { emoji: "🐣", name: "Hatchling", level: 2, xpNeeded: 10 },
-    { emoji: "🐥", name: "Chick", level: 3, xpNeeded: 15 },
-    { emoji: "🐓", name: "Chicken", level: 4, xpNeeded: 20 },
-    { emoji: "🦅", name: "Eagle", level: 5, xpNeeded: 25 }
-];
-
+// Global state
+let currentUser = null;
 let currentTask = null;
-let userData = {
-    xp: 0,
-    level: 1,
-    tasksToday: 0,
-    streak: 0,
-    lastTaskDate: null
-};
+let userProfile = null;
 
-// Load user data
+// DOM elements
+const authSection = document.getElementById('auth-section');
+const appSection = document.getElementById('app-section');
+const loginForm = document.getElementById('login-form');
+const petSelection = document.getElementById('pet-selection');
+const selectPetBtn = document.getElementById('select-pet-btn');
+
+// Auth event listeners
+document.getElementById('signin-btn').addEventListener('click', handleSignIn);
+document.getElementById('signup-btn').addEventListener('click', handleSignUp);
+document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+// Pet selection
+document.querySelectorAll('.pet-option').forEach(option => {
+    option.addEventListener('click', (e) => {
+        document.querySelectorAll('.pet-option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        selectPetBtn.classList.remove('hidden');
+        selectPetBtn.dataset.petType = option.dataset.pet;
+    });
+});
+
+selectPetBtn.addEventListener('click', handlePetSelection);
+
+// App event listeners
+document.getElementById('complete-task').addEventListener('click', completeTask);
+document.getElementById('skip-task').addEventListener('click', skipTask);
+document.getElementById('regenerate-task').addEventListener('click', generateNewTask);
+
+// Auth functions
+async function handleSignIn() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    const result = await authManager.signIn(email, password);
+    if (result.success) {
+        await loadUserData();
+    } else {
+        alert('Sign in failed: ' + result.error);
+    }
+}
+
+async function handleSignUp() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    const result = await authManager.signUp(email, password);
+    if (result.success) {
+        // Show pet selection
+        loginForm.classList.add('hidden');
+        petSelection.classList.remove('hidden');
+    } else {
+        alert('Sign up failed: ' + result.error);
+    }
+}
+
+async function handleLogout() {
+    await authManager.signOut();
+    showAuthSection();
+}
+
+async function handlePetSelection() {
+    const petType = selectPetBtn.dataset.petType;
+    if (petType && authManager.user) {
+        await authManager.updatePetType(authManager.user.id, petType);
+        await loadUserData();
+    }
+}
+
+// User data management
 async function loadUserData() {
-    try {
-        const { data, error } = await supabase
-            .from('user_progress')
-            .select('*')
-            .single();
-        
-        if (error && error.code === 'PGRST116') {
-            // No data yet, create initial record
-            await createUserRecord();
-        } else if (data) {
-            userData = data;
-            updateUI();
-        }
-    } catch (error) {
-        console.error('Error loading data:', error);
-        // Continue with local data if Supabase fails
+    const user = await authManager.getCurrentUser();
+    if (!user) {
+        showAuthSection();
+        return;
+    }
+    
+    currentUser = user;
+    
+    // Load user profile
+    const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+    
+    if (profile) {
+        userProfile = profile;
+        showAppSection();
+        updateUI();
+        await generateNewTask();
+    } else {
+        // New user, show pet selection
+        loginForm.classList.add('hidden');
+        petSelection.classList.remove('hidden');
+        authSection.classList.remove('hidden');
+        appSection.classList.add('hidden');
     }
 }
 
-async function createUserRecord() {
-    try {
-        const { error } = await supabase
-            .from('user_progress')
-            .insert([userData]);
-        
-        if (error) throw error;
-    } catch (error) {
-        console.error('Error creating record:', error);
-    }
-}
-
-// Generate new task
-function generateNewTask() {
-    const randomTask = tinyTasks[Math.floor(Math.random() * tinyTasks.length)];
-    currentTask = {
-        ...randomTask,
-        id: Date.now(),
-        completed: false
+// Task management
+async function generateNewTask() {
+    if (!userProfile) return;
+    
+    const userContext = {
+        petType: userProfile.pet_type,
+        level: userProfile.level,
+        tasksToday: userProfile.tasks_today
     };
+    
+    currentTask = await aiTaskGenerator.generateTask(userContext);
     
     document.getElementById('current-task').querySelector('.task-text').textContent = currentTask.text;
     document.getElementById('task-time').textContent = currentTask.time;
 }
 
-// Complete task
 async function completeTask() {
-    if (!currentTask) return;
+    if (!currentTask || !userProfile) return;
     
-    // Update XP and level
-    userData.xp += currentTask.xp;
-    userData.tasksToday++;
+    // Update user profile
+    userProfile.xp += currentTask.xp;
+    userProfile.tasks_today += 1;
+    userProfile.total_tasks += 1;
     
-    // Check if leveled up
-    const currentStage = petStages[userData.level - 1];
-    if (userData.xp >= currentStage.xpNeeded && userData.level < petStages.length) {
-        userData.level++;
-        userData.xp = 0; // Reset XP for new level
+    // Check for level up
+    const currentStage = getPetEvolution(userProfile.pet_type, userProfile.level);
+    if (userProfile.xp >= currentStage.xpNeeded && userProfile.level < 5) {
+        userProfile.level += 1;
+        userProfile.xp = 0;
         celebrateLevelUp();
     }
     
     // Save to recent tasks
     saveRecentTask(currentTask.text);
     
-    // Save to database
-    await saveUserData();
+    // Update database
+    await updateUserProfile();
     
     // Update UI
     updateUI();
     
     // Generate new task
-    generateNewTask();
+    await generateNewTask();
 }
 
-// Skip task
-function skipTask() {
-    generateNewTask();
+async function skipTask() {
+    await generateNewTask();
 }
 
-// Save recent task locally
+// UI functions
+function showAuthSection() {
+    authSection.classList.remove('hidden');
+    appSection.classList.add('hidden');
+}
+
+function showAppSection() {
+    authSection.classList.add('hidden');
+    appSection.classList.remove('hidden');
+}
+
+function updateUI() {
+    if (!userProfile) return;
+    
+    // Update pet
+    const petData = getPetEvolution(userProfile.pet_type, userProfile.level);
+    const pet = document.getElementById('pet');
+    pet.textContent = petData.emoji;
+    pet.className = `pet ${userProfile.pet_type} stage-${userProfile.level}`;
+    
+    // Update app theme
+    document.body.style.background = petData.colors.gradient;
+    document.getElementById('app-title').textContent = `${petData.name} Companion`;
+    document.getElementById('current-pet-type').textContent = userProfile.pet_type;
+    document.getElementById('pet-name').textContent = userProfile.pet_name || petData.name;
+    
+    // Update stats
+    document.getElementById('level').textContent = userProfile.level;
+    document.getElementById('xp').textContent = userProfile.xp;
+    document.getElementById('xp-needed').textContent = petData.xpNeeded;
+    document.getElementById('tasks-today').textContent = userProfile.tasks_today;
+    document.getElementById('streak').textContent = userProfile.streak;
+    document.getElementById('total-tasks').textContent = userProfile.total_tasks;
+    
+    // Update XP bar
+    const xpPercent = (userProfile.xp / petData.xpNeeded) * 100;
+    document.getElementById('xp-fill').style.width = `${xpPercent}%`;
+}
+
 function saveRecentTask(taskText) {
-    let recent = JSON.parse(localStorage.getItem('recentTasks') || '[]');
+    let recent = JSON.parse(localStorage.getItem(`recentTasks_${currentUser.id}`) || '[]');
     recent.unshift({
         text: taskText,
         time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
     });
-    recent = recent.slice(0, 5); // Keep only 5 recent
-    localStorage.setItem('recentTasks', JSON.stringify(recent));
+    recent = recent.slice(0, 5);
+    localStorage.setItem(`recentTasks_${currentUser.id}`, JSON.stringify(recent));
     updateRecentTasks();
 }
 
-// Update recent tasks display
 function updateRecentTasks() {
-    const recent = JSON.parse(localStorage.getItem('recentTasks') || '[]');
+    const recent = JSON.parse(localStorage.getItem(`recentTasks_${currentUser.id}`) || '[]');
     const container = document.getElementById('recent-list');
     container.innerHTML = recent.map(task => `
         <div class="recent-item">
@@ -145,83 +222,42 @@ function updateRecentTasks() {
     `).join('');
 }
 
-// Save user data to database
-async function saveUserData() {
-    try {
-        const { error } = await supabase
-            .from('user_progress')
-            .update(userData)
-            .eq('id', userData.id || 1);
-        
-        if (error) throw error;
-    } catch (error) {
-        console.error('Error saving data:', error);
-    }
-}
-
-// Update UI
-function updateUI() {
-    // Update pet
-    const pet = document.getElementById('pet');
-    const currentStage = petStages[userData.level - 1];
-    pet.textContent = currentStage.emoji;
-    pet.className = `pet stage-${userData.level}`;
-    
-    // Update stats
-    document.getElementById('level').textContent = userData.level;
-    document.getElementById('xp').textContent = userData.xp;
-    document.getElementById('xp-needed').textContent = currentStage.xpNeeded;
-    document.getElementById('tasks-today').textContent = userData.tasksToday;
-    document.getElementById('streak').textContent = userData.streak;
-    
-    // Update XP bar
-    const xpPercent = (userData.xp / currentStage.xpNeeded) * 100;
-    document.getElementById('xp-fill').style.width = `${xpPercent}%`;
-    
-    // Update recent tasks
-    updateRecentTasks();
-}
-
-// Celebrate level up
 function celebrateLevelUp() {
     const pet = document.getElementById('pet');
     pet.classList.add('celebrating');
     setTimeout(() => pet.classList.remove('celebrating'), 500);
 }
 
-// Initialize
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadUserData();
-    generateNewTask();
-    
-    // Event listeners
-    document.getElementById('complete-task').addEventListener('click', completeTask);
-    document.getElementById('skip-task').addEventListener('click', skipTask);
-});
-
-// Create table in Supabase (run this once)
-async function createTable() {
+async function updateUserProfile() {
     try {
-        const { error } = await supabase.rpc('exec_sql', {
-            sql: `
-                CREATE TABLE IF NOT EXISTS user_progress (
-                    id SERIAL PRIMARY KEY,
-                    xp INTEGER DEFAULT 0,
-                    level INTEGER DEFAULT 1,
-                    tasks_today INTEGER DEFAULT 0,
-                    streak INTEGER DEFAULT 0,
-                    last_task_date DATE,
-                    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-                );
-            `
-        });
+        const { error } = await supabase
+            .from('user_profiles')
+            .update({
+                level: userProfile.level,
+                xp: userProfile.xp,
+                tasks_today: userProfile.tasks_today,
+                total_tasks: userProfile.total_tasks,
+                streak: userProfile.streak
+            })
+            .eq('user_id', currentUser.id);
         
         if (error) throw error;
-        console.log('Table created successfully');
     } catch (error) {
-        console.error('Error creating table:', error);
+        console.error('Update profile error:', error);
     }
 }
 
-// Call this once to set up the table
-// createTable();
+// Initialize
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if user is already signed in
+    await loadUserData();
+});
+
+// Auth state changes
+authManager.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_OUT') {
+        showAuthSection();
+    } else if (event === 'SIGNED_IN') {
+        loadUserData();
+    }
+});

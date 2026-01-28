@@ -210,3 +210,139 @@ header p {
 .celebrating {
     animation: celebrate 0.5s ease;
 }
+
+/* Auth Styles */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-box {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+}
+
+.auth-box h1 {
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+.auth-box button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-box button:not(.secondary) {
+    background: #667eea;
+    color: white;
+}
+
+.auth-box button.secondary {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.pet-options {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px 0;
+}
+
+.pet-option {
+    padding: 20px;
+    border: 2px solid #ddd;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pet-option:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.pet-option.selected {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.pet-emoji {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+/* App Header */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logout {
+    background: #ff4757;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+}
+
+/* Regenerate button */
+.regenerate-btn {
+    background: #ffa502;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.regenerate-btn:hover {
+    background: #ff7675;
+}
+
+/* Hidden utility */
+.hidden {
+    display: none !important;
+}
+
+/* Dragon theme variations */
+.pet.dragon.stage-1 { content: "🥚"; }
+.pet.dragon.stage-2 { content: "🐲"; }
+.pet.dragon.stage-3 { content: "🐉"; }
+.pet.dragon.stage-4 { content: "🐉"; font-size: 5em; }
+.pet.dragon.stage-5 { content: "🐉"; font-size: 6em; filter: drop-shadow(0 0 10px gold); }
+
+/* Wolf theme variations */
+.pet.wolf.stage-1 { content: "🥚"; }
+.pet.wolf.stage-2 { content: "🐕"; }
+.pet.wolf.stage-3 { content: "🐺"; }
+.pet.wolf.stage-4 { content: "🐺"; font-size: 5em; }
+.pet.wolf.stage-5 { content: "🐺"; font-size: 6em; filter: drop-shadow(0 0 10px silver); }
