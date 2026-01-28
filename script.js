@@ -91,15 +91,24 @@ async function loadUserData() {
     
     try {
         console.log('Loading profile...');
+        console.log('About to query: user_profiles where user_id =', currentUser.id);
+        console.log('Using supabase:', typeof supabase);
+        console.log('supabase.from exists:', typeof supabase.from);
+        
         const { data: profile, error } = await supabase
             .from('user_profiles')
             .select('*')
             .eq('user_id', currentUser.id)
             .single();
         
+        console.log('Profile query completed');
         console.log('Profile result:', { data: profile, error });
         
         if (error) {
+            console.log('Error detected:', error);
+            console.log('Error code:', error.code);
+            console.log('Error message:', error.message);
+            
             if (error.code === 'PGRST116') {
                 console.log('Creating new profile...');
                 await createUserProfile(currentUser.id);
@@ -107,6 +116,7 @@ async function loadUserData() {
                 throw error;
             }
         } else {
+            console.log('Profile loaded successfully:', profile);
             userProfile = profile;
         }
         
@@ -117,11 +127,43 @@ async function loadUserData() {
         console.log('=== COMPLETED ===');
         
     } catch (error) {
-        console.error('ERROR:', error);
+        console.error('MAJOR ERROR:', error);
+        console.error('Error stack:', error.stack);
+        alert('Login error: ' + error.message + '\nCheck console for details');
         showAuthSection();
     }
 }
 
+
+// Add this test function
+async function testSupabase() {
+    console.log('=== TESTING SUPABASE ===');
+    console.log('supabase exists:', !!supabase);
+    console.log('supabase.from exists:', typeof supabase.from);
+    
+    try {
+        const { data, error } = await supabase.from('user_profiles').select('*').limit(1);
+        console.log('Test query result:', { data, error });
+    } catch (testError) {
+        console.error('Test query failed:', testError);
+    }
+}
+
+// Call this when you click sign in
+async function handleSignIn() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    console.log('Attempting sign in...');
+    await testSupabase(); // Add this test
+    const result = await authManager.signIn(email, password);
+    
+    if (result.success) {
+        console.log('Sign in successful - auth state change will handle the rest');
+    } else {
+        alert('Sign in failed: ' + result.error);
+    }
+}
 
 // Add this new function to create profile if missing:
 async function createUserProfile(userId) {
