@@ -1,0 +1,18 @@
+<!-- Create a simple HTML file to generate an icon -->
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="canvas" width="144" height="144"></canvas>
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#667eea';
+ctx.fillRect(0, 0, 144, 144);
+ctx.font = '80px Arial';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillText('🐉', 72, 72);
+// Right-click and save this as icon-144x144.png
+</script>
+</body>
+</html>

@@ -2,11 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tiny Wins">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="Small steps, big changes. AI-powered tasks with your dragon or wolf companion.">
+    <!-- Prevent zoom on double tap -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <!-- iOS splash screen -->
+    <link rel="apple-touch-startup-image" href="icons/splash.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <!-- Add this in your <head> section -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
     <title>Tiny Wins - Dragon & Wolf Companions</title>
     <link rel="stylesheet" href="main.css">
+
+    
 </head>
 <body>
+    <div id="install-prompt" class="install-prompt hidden">
+        <div class="install-content">
+            <span>📱 Install Tiny Wins for offline access!</span>
+            <button id="install-btn" class="install-button">Install</button>
+            <button id="dismiss-install" class="dismiss-btn">✕</button>
+        </div>
+    </div>
+
+    <!-- Touch feedback -->
+    <div id="touch-feedback" class="touch-feedback"></div>
     <!-- Auth Section -->
     <div id="auth-section" class="auth-container">
         <div class="auth-box">
@@ -93,5 +122,48 @@
     </div>
 
     <script type="module" src="script.js"></script>
+    <script type="module" src="script.js"></script>
+<script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('SW registered: ', registration);
+                })
+                .catch((registrationError) => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+        });
+    }
+
+    // Handle install prompt
+    let deferredPrompt;
+    const installPrompt = document.getElementById('install-prompt');
+    const installBtn = document.getElementById('install-btn');
+    const dismissInstall = document.getElementById('dismiss-install');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installPrompt.classList.remove('hidden');
+    });
+
+    installBtn.addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response: ${outcome}`);
+            deferredPrompt = null;
+            installPrompt.classList.add('hidden');
+        }
+    });
+
+    dismissInstall.addEventListener('click', () => {
+        installPrompt.classList.add('hidden');
+        deferredPrompt = null;
+    });
+</script>
+</body>
 </body>
 </html>

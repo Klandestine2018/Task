@@ -10,8 +10,47 @@ export class AITaskGenerator {
         ];
     }
 
+    buildLevelPrompt(level) {
+        if (level <= 3) {
+            // Self-care and grounding
+            return `Generate ONE tiny self-care task for someone overwhelmed. Focus on body, breathing, or immediate surroundings.
+
+Examples: "Take 3 deep breaths", "Drink water", "Hold keys for 10 seconds", "Close door gently", "Stretch fingers", "Look at something green"
+
+Keep it: 5 words max. Include time in parentheses.`;
+            
+        } else if (level <= 6) {
+            // Household and environment
+            return `Generate ONE tiny household task. Something small in their immediate space.
+
+Examples: "Put 1 dish away", "Move 1 shirt to hamper", "Wipe counter spot", "Straighten 1 pillow", "Put 1 thing in trash", "Move 1 book to shelf"
+
+Keep it: 8 words max. Include time in parentheses.`;
+            
+        } else if (level <= 9) {
+            // Outside world preparation
+            return `Generate ONE tiny outside-world task. Building confidence for external responsibilities.
+
+Examples: "Check wallet is in pocket", "Hold phone for 30 seconds", "Look at door handle", "Touch your keys", "Stand by front door", "Check mailbox area"
+
+Keep it: 13 words max. Include time in parentheses.`;
+            
+        } else {
+            // Master level - full responsibilities
+            return `Generate ONE substantial but achievable task. Real-world responsibility.
+
+Examples: "Start washing machine", "Make sandwich", "Sweep kitchen floor", "Fill dishwasher", "Make grocery list", "Set out trash"
+
+Keep it: 20 words max. Include time in parentheses.`;
+        }
+    }
+
+        // Update your generateTask method to set level:
     async generateTask(userContext = {}) {
-        const prompt = this.buildPrompt(userContext);
+        const level = userContext.level || 1;
+        this.setCurrentLevel(level); // Store level for XP calculation
+        
+        const prompt = this.buildLevelPrompt(level);
         
         try {
             const response = await fetch(GROQ_API_URL, {
@@ -21,19 +60,19 @@ export class AITaskGenerator {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    model: this.models[0], // Use most reliable model
+                    model: this.models[1],
                     messages: [
                         {
                             role: 'system',
-                            content: 'You are a supportive mental health assistant that creates tiny, achievable tasks for people struggling with daily life. Each task should take 30 seconds to 2 minutes maximum. Be gentle, encouraging, and realistic about what someone can do when overwhelmed.'
+                            content: 'You give extremely short, direct answers. No explanations. Just action + time.'
                         },
                         {
                             role: 'user',
                             content: prompt
                         }
                     ],
-                    temperature: 0.7,
-                    max_tokens: 150
+                    temperature: 0.6,
+                    max_tokens: 20
                 })
             });
 
@@ -42,74 +81,82 @@ export class AITaskGenerator {
             }
 
             const data = await response.json();
-            const taskText = data.choices[0].message.content.trim();
+            console.log('AI Response level', level + ':', data.choices[0].message.content);
             
-            // Parse the response to extract task and time estimate
-            return this.parseTaskResponse(taskText);
+            return this.parseTaskResponse(data.choices[0].message.content);
             
         } catch (error) {
             console.error('AI Task Generation Error:', error);
-            // Fallback to simple tasks if AI fails
-            return this.getFallbackTask();
+            return this.getLevelFallbackTask(level);
         }
-    }
-
-    buildPrompt(userContext) {
-        const basePrompt = `Generate ONE tiny, achievable task for someone who is struggling with daily life. 
-        The task should take 30 seconds to 2 minutes maximum.
-        
-        Requirements:
-        - Extremely simple and specific
-        - No complex steps
-        - Something that can be done immediately
-        - Gentle and non-overwhelming
-        - Include time estimate (10 sec, 30 sec, 1 min, 2 min)
-        
-        Examples of good tasks:
-        - "Take one sip of water" (10 sec)
-        - "Put one dish in the sink" (30 sec)
-        - "Take three deep breaths" (1 min)
-        - "Look out the window for 30 seconds" (1 min)
-        
-        Generate something similar but different.`;
-        
-        if (userContext.petType) {
-            return basePrompt + ` The person has a ${userContext.petType} companion, so make it feel supportive and encouraging.`;
-        }
-        
-        return basePrompt;
     }
 
     parseTaskResponse(response) {
-        // Try to extract time estimate from response
-        const timeMatch = response.match(/\((\d+\s*(sec|min|minute|second)s?)\)/i);
+        const timeMatch = response.match(/\(([^)]+)\)/);
         const timeEstimate = timeMatch ? timeMatch[1] : '1 min';
-        
-        // Remove time estimate from task text
+
         let taskText = response.replace(/\s*\([^)]*\)\s*/g, '').trim();
+        taskText = taskText.replace(/^["']|["']$/g, '');
+        taskText = taskText.charAt(0).toUpperCase() + taskText.slice(1);
         
-        // Clean up the task text
-        taskText = taskText.replace(/^[-•]\s*/, ''); // Remove bullet points
-        taskText = taskText.charAt(0).toUpperCase() + taskText.slice(1); // Capitalize first letter
-        
+        const level = this.currentLevel || 1;
+
         return {
             text: taskText,
             time: timeEstimate,
-            xp: 1,
+            xp: level,
             source: 'ai'
         };
     }
 
-    getFallbackTask() {
-        const fallbackTasks = [
-            { text: "Take one sip of water", time: "10 sec", xp: 1, source: 'fallback' },
-            { text: "Put one item back where it belongs", time: "1 min", xp: 1, source: 'fallback' },
-            { text: "Take three deep breaths", time: "1 min", xp: 1, source: 'fallback' },
-            { text: "Look at something beautiful", time: "30 sec", xp: 1, source: 'fallback' },
-            { text: "Stretch your arms once", time: "30 sec", xp: 1, source: 'fallback' }
-        ];
+    // Add this method to track current level:
+    setCurrentLevel(level) {
+        this.currentLevel = level;
+    }
+
+    getLevelFallbackTask(level) {
+        const baseXp = level; // XP equals level
         
-        return fallbackTasks[Math.floor(Math.random() * fallbackTasks.length)];
+        if (level <= 3) {
+            const tasks = [
+                { text: "Take 3 deep breaths", time: "30 sec", xp: level, source: 'fallback' },
+                { text: "Drink water", time: "30 sec", xp: level, source: 'fallback' },
+                { text: "Hold keys 10 seconds", time: "10 sec", xp: level, source: 'fallback' },
+                { text: "Close door gently", time: "10 sec", xp: level, source: 'fallback' },
+                { text: "Stretch fingers", time: "30 sec", xp: level, source: 'fallback' }
+            ];
+            return tasks[Math.floor(Math.random() * tasks.length)];
+            
+        } else if (level <= 6) {
+            const tasks = [
+                { text: "Put 1 dish away", time: "1 min", xp: level, source: 'fallback' },
+                { text: "Move 1 shirt to hamper", time: "1 min", xp: level, source: 'fallback' },
+                { text: "Wipe counter spot", time: "1 min", xp: level, source: 'fallback' },
+                { text: "Straighten 1 pillow", time: "30 sec", xp: level, source: 'fallback' },
+                { text: "Put 1 thing in trash", time: "30 sec", xp: level, source: 'fallback' }
+            ];
+            return tasks[Math.floor(Math.random() * tasks.length)];
+            
+        } else if (level <= 9) {
+            const tasks = [
+                { text: "Check wallet in pocket", time: "30 sec", xp: level, source: 'fallback' },
+                { text: "Hold phone 30 seconds", time: "30 sec", xp: level, source: 'fallback' },
+                { text: "Look at door handle", time: "10 sec", xp: level, source: 'fallback' },
+                { text: "Touch your keys", time: "10 sec", xp: level, source: 'fallback' },
+                { text: "Stand by front door", time: "30 sec", xp: level, source: 'fallback' }
+            ];
+            return tasks[Math.floor(Math.random() * tasks.length)];
+            
+        } else {
+            const tasks = [
+                { text: "Start washing machine", time: "2 min", xp: level, source: 'fallback' },
+                { text: "Make sandwich", time: "2 min", xp: level, source: 'fallback' },
+                { text: "Sweep kitchen floor", time: "2 min", xp: level, source: 'fallback' },
+                { text: "Fill dishwasher", time: "2 min", xp: level, source: 'fallback' },
+                { text: "Make grocery list", time: "2 min", xp: level, source: 'fallback' }
+            ];
+            return tasks[Math.floor(Math.random() * tasks.length)];
+        }
     }
 }
 

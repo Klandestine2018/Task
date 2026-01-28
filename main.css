@@ -346,3 +346,220 @@ header p {
 .pet.wolf.stage-3 { content: "🐺"; }
 .pet.wolf.stage-4 { content: "🐺"; font-size: 5em; }
 .pet.wolf.stage-5 { content: "🐺"; font-size: 6em; filter: drop-shadow(0 0 10px silver); }
+
+/* Mobile-first responsive design */
+:root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+}
+
+/* Mobile optimizations */
+body {
+    padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    touch-action: manipulation;
+}
+
+/* Prevent text size adjustment */
+html {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+/* Mobile container adjustments */
+.container {
+    max-width: 100%;
+    padding: 15px;
+    margin: 0 auto;
+}
+
+/* Touch-friendly buttons */
+button, .button, .complete-btn, .skip-btn, .regenerate-btn {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Larger touch targets on mobile */
+@media (max-width: 768px) {
+    .complete-btn, .skip-btn, .regenerate-btn {
+        padding: 16px 20px;
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+    
+    .pet {
+        font-size: 5em;
+    }
+    
+    .task-card {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .task-text {
+        font-size: 1.2em;
+        line-height: 1.4;
+    }
+    
+    .stat-card {
+        padding: 20px 10px;
+    }
+    
+    .stat-number {
+        font-size: 1.8em;
+    }
+}
+
+/* Swipe hint for mobile */
+.swipe-hint {
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 20px;
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .swipe-hint {
+        display: block;
+    }
+}
+
+/* Touch feedback animation */
+.touch-feedback {
+    position: fixed;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(102, 126, 234, 0.3);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.3s ease;
+    z-index: 9999;
+}
+
+.touch-feedback.show {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+}
+
+/* Install prompt */
+.install-prompt {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.install-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.install-button {
+    background: white;
+    color: #4CAF50;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.dismiss-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2em;
+    cursor: pointer;
+    padding: 5px;
+}
+
+/* iPhone notch and safe area handling */
+@supports (padding-top: env(safe-area-inset-top)) {
+    .auth-container,
+    .container {
+        padding-top: calc(20px + env(safe-area-inset-top));
+    }
+    
+    .install-prompt {
+        top: calc(20px + env(safe-area-inset-top));
+    }
+}
+
+/* Landscape mode adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+    .pet {
+        font-size: 3em;
+    }
+    
+    .task-section {
+        margin-bottom: 10px;
+    }
+    
+    .stats {
+        margin-bottom: 10px;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    }
+    
+    .container {
+        background: rgba(30, 30, 30, 0.95);
+        color: #ffffff;
+    }
+    
+    .task-card,
+    .stat-card,
+    .recent-tasks,
+    .pet-container {
+        background: rgba(50, 50, 50, 0.9);
+        color: #ffffff;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
