@@ -225,3 +225,4 @@ export class AuthManager {
 
 // Export single instance
 export const authManager = new AuthManager();
+export { supabase };

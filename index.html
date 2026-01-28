@@ -16,7 +16,7 @@
     <link rel="apple-touch-startup-image" href="icons/splash.png">
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="/Task/manifest.json">
     <!-- Add this in your <head> section -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>">
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180x180.png">
@@ -124,19 +124,6 @@
     <script type="module" src="script.js"></script>
     <script type="module" src="script.js"></script>
 <script>
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js')
-                .then((registration) => {
-                    console.log('SW registered: ', registration);
-                })
-                .catch((registrationError) => {
-                    console.log('SW registration failed: ', registrationError);
-                });
-        });
-    }
-
     // Handle install prompt
     let deferredPrompt;
     const installPrompt = document.getElementById('install-prompt');
