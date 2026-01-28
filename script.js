@@ -149,22 +149,6 @@ async function testSupabase() {
     }
 }
 
-// Call this when you click sign in
-async function handleSignIn() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    console.log('Attempting sign in...');
-    await testSupabase(); // Add this test
-    const result = await authManager.signIn(email, password);
-    
-    if (result.success) {
-        console.log('Sign in successful - auth state change will handle the rest');
-    } else {
-        alert('Sign in failed: ' + result.error);
-    }
-}
-
 // Add this new function to create profile if missing:
 async function createUserProfile(userId) {
     console.log('Creating profile for user:', userId);
