@@ -1,0 +1,212 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: #333;
+    padding: 20px;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    color: #667eea;
+    font-size: 2em;
+    margin-bottom: 5px;
+}
+
+header p {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.pet-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.pet-container {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.pet {
+    font-size: 4em;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.pet.stage-1 { font-size: 3em; }
+.pet.stage-2 { font-size: 3.5em; }
+.pet.stage-3 { font-size: 4em; }
+.pet.stage-4 { font-size: 4.5em; }
+.pet.stage-5 { font-size: 5em; }
+
+.pet-name {
+    font-weight: bold;
+    color: #667eea;
+    margin-bottom: 5px;
+}
+
+.level {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.xp-bar {
+    background: #e0e0e0;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.xp-fill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.xp-text {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.task-section {
+    margin-bottom: 20px;
+}
+
+.task-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-left: 4px solid #667eea;
+}
+
+.task-text {
+    font-size: 1.1em;
+    margin-bottom: 8px;
+}
+
+.task-time {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.complete-btn, .skip-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.complete-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.complete-btn:hover {
+    background: #45a049;
+    transform: translateY(-1px);
+}
+
+.skip-btn {
+    background: #f0f0f0;
+    color: #666;
+}
+
+.skip-btn:hover {
+    background: #e0e0e0;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    text-align: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    flex: 1;
+    margin: 0 5px;
+}
+
+.stat-number {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #667eea;
+}
+
+.stat-label {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.recent-tasks {
+    margin-top: 20px;
+}
+
+.recent-tasks h3 {
+    margin-bottom: 10px;
+    color: #667eea;
+}
+
+#recent-list {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.recent-item {
+    padding: 8px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.9em;
+}
+
+.recent-item:last-child {
+    border-bottom: none;
+}
+
+.recent-time {
+    color: #666;
+    font-size: 0.8em;
+}
+
+@keyframes celebrate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.celebrating {
+    animation: celebrate 0.5s ease;
+}

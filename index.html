@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny Wins - Pet Evolution</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌱 Tiny Wins</h1>
+            <p>One small step at a time</p>
+        </header>
+
+        <div class="pet-section">
+            <div class="pet-container">
+                <div id="pet" class="pet stage-1">🥚</div>
+                <div class="pet-name">Your Pet</div>
+                <div class="level">Level <span id="level">1</span></div>
+                <div class="xp-bar">
+                    <div id="xp-fill" class="xp-fill"></div>
+                </div>
+                <div class="xp-text"><span id="xp">0</span> / <span id="xp-needed">5</span> XP</div>
+            </div>
+        </div>
+
+        <div class="task-section">
+            <h2>Next Tiny Task</h2>
+            <div id="current-task" class="task-card">
+                <div class="task-text">Loading...</div>
+                <div class="task-time">⏱️ <span id="task-time">1 min</span></div>
+            </div>
+            
+            <button id="complete-task" class="complete-btn">I Did It! ✅</button>
+            <button id="skip-task" class="skip-btn">Too Much Right Now 🔄</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="tasks-today">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Streak</div>
+            </div>
+        </div>
+
+        <div class="recent-tasks">
+            <h3>Recent Wins</h3>
+            <div id="recent-list"></div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
